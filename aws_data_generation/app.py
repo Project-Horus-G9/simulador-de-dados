@@ -12,11 +12,12 @@ class Simulador:
     def gerar_dados(self, ceu, direcionamento, inclinacao):
         dados = {
             "data_hora": "",
+            "obstrucao": "",
             "luminosidade": "",
             "temperatura_externa": "",
             "temperatura_interna": "",
             "potencia": "",
-            "voltagem": "",
+            "tensao": "",
             "uv": "",
             "ceu": "",
             "direcionamento": "",
@@ -26,6 +27,16 @@ class Simulador:
         # Data e hora atual
         data_atual = datetime.now()
         dados["data_hora"] = data_atual.strftime("%Y-%m-%d %H:%M")
+        
+        # Obstrução
+        nivel_obstrucao = np.random.uniform(1, 10)
+        
+        if nivel_obstrucao <= 5:
+            dados["obstrucao"] = random.uniform(5, 20)
+        elif nivel_obstrucao <= 8:
+            dados["obstrucao"] = random.uniform(20, 50)
+        else:
+            dados["obstrucao"] = random.uniform(50, 70)
         
         # Luminosidade
         if data_atual.hour in range(6, 18):
@@ -61,8 +72,8 @@ class Simulador:
         if data_atual.hour < 6 or data_atual.hour > 18:
             dados["potencia"] *= 0.1
             
-        # Voltagem
-        dados["voltagem"] = 40 + random.uniform(-2, 2)
+        # Tensão
+        dados["tensao"] = 40 + random.uniform(-2, 2)
         
         # UV
         if data_atual.hour in range(8, 16):
@@ -115,36 +126,84 @@ class Simulador:
         return dados
     
     def dados_trusted(self, dados_raw):
-        dados_trusted = []
+
+        dados = {
+            "cliente": dados_raw["cliente"],
+            "setores": []
+        }
         
-        # for setor in dados_raw["setores"]:
-        #     for dado in setor["dados"]:
-        #         dado_trusted = {
-        #             "data_hora": dado["data_hora"],
-        #             "luminosidade": dado["luminosidade"],
-        #             "temperatura_externa": dado["temperatura_externa"],
-        #             "temperatura_interna": dado["temperatura_interna"],
-        #             "potencia": dado["potencia"],
-        #             "voltagem": dado["voltagem"]
-        #         }
-        #         dados_trusted.append(dado_trusted)
+        for setor in dados_raw["setores"]:
+            setor_trusted = {
+                "setor": setor["setor"],
+                "dados": []
+            }
+            
+            for dado in setor["dados"]:
+                energia_gerada = round((dado['uv'] * 10 * 0.8) / (dado["obstrucao"] * 0.2), 2)
+                max_enegia_dia = 44
+                max_enegia_noite = 4.8
                 
-        return dados_trusted
+                energia_esperada = round(dado['potencia'] * 0.8, 2)
+                
+                if dado["data_hora"].time() >= datetime.strptime('06:00:00', '%H:%M:%S').time() and dado["data_hora"].time() <= datetime.strptime('18:00:00', '%H:%M:%S').time():
+                    eficiencia = round(energia_gerada / max_enegia_dia, 0)
+                else:
+                    eficiencia = round(energia_gerada / max_enegia_noite, 0)
+                
+                dado_trusted = {
+                    "data_hora": dado["data_hora"],
+                    "obstrucao": dado["obstrucao"],
+                    "luminosidade": dado["luminosidade"],
+                    "temperatura_externa": dado["temperatura_externa"],
+                    "temperatura_interna": dado["temperatura_interna"],
+                    "tensao": dado["tensao"],
+                    "energia_gerada": energia_gerada,
+                    "energia_esperada": energia_esperada,
+                    "eficiencia": eficiencia,
+                    "ceu": dado["ceu"],
+                    "direcionamento": dado["direcionamento"],
+                    "inclinacao": dado["inclinacao"]
+                }
+                setor_trusted["dados"].append(dado_trusted)
+                
+            dados["setores"].append(setor_trusted)
+                
+        return dados
     
     def dados_client(self, dados_trusted):
-        dados_client = []
+        dados = {
+            "cliente": dados_trusted["cliente"],
+            "setores": []
+        }
         
-        # for dado in dados_trusted:
-        #     dado_cliente = {
-        #         "data_hora": dado["data_hora"],
-        #         "luminosidade": dado["luminosidade"],
-        #         "temperatura_interna": dado["temperatura_interna"],
-        #         "potencia": dado["potencia"]
-        #     }
-        #     dados_cliente.append(dado_cliente)
+        for setor in dados_trusted["setores"]:
+            setor_client = {
+                "setor": setor["setor"],
+                "dados": []
+            }
+            
+            for dado in setor["dados"]:
+                                
+                # horario: 5h as 19h
+                # razao temp > 2 ou < 0.5
+                # energia gerada > 20
+                # energia esperada > 20
+                # tensao > 5
+                
+                razao = dado["temperatura_interna"] / dado["temperatura_externa"]
+                
+                horario = dado["data_hora"].time() >= datetime.strptime('05:00:00', '%H:%M:%S').time() and dado["data_hora"].time() <= datetime.strptime('19:00:00', '%H:%M:%S').time()
+                razao_temp = razao > 2 or razao < 0.5
+                energia_gerada = dado["energia_gerada"] > 20
+                energia_esperada = dado["energia_esperada"] > 20
+                tensao = dado["tensao"] > 5
+                
+                if horario or razao_temp or energia_gerada or energia_esperada or tensao:
+                    setor_client["dados"].append(dado)                    
+                
+            dados["setores"].append(setor_client)
         
-        return dados_client
-    
+        
     def enviar_dados_bucket(self, bucket_name, dados):
         try:
             arquivo_nome = f"{dados['cliente']}_{datetime.now().strftime('%Y-%m-%d_%H-%M')}.json"
