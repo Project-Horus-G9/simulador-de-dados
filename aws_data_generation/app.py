@@ -213,14 +213,15 @@ class Simulador:
         except Exception as e:
             print(f"Erro ao enviar o arquivo para o bucket S3: {e}")
     
-    def main(self, empresa):
-        num_dados = 5
-        num_setores = 3
+    def main(self, info):
         buckets = ["set-raw", "tote-trusted", "horus-client"]
         
+        empresa = info["empresa"]
+        num_dados = info["num_dados"]
+        num_setores = info["num_setores"]
         info_paineis = {
-            "direcionamento": "norte",
-            "inclinacao": 22.5
+            "direcionamento": info["direcionamento"],
+            "inclinacao": info["inclinacao"]
         }
         
         # raw
@@ -241,7 +242,13 @@ class Simulador:
 if __name__ == "__main__":
     simulador = Simulador()
     
-    empresa = "Horus"
+    info = {
+        "empresa": "Empresa X",
+        "num_dados": 5,
+        "num_setores": 3,
+        "direcionamento": "norte",
+        "inclinacao": 22.5,
+    }
     
     while True:
-        simulador.main(empresa)
+        simulador.main(info)
