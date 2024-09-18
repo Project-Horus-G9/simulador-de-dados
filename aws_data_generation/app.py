@@ -6,7 +6,6 @@ import boto3
 from datetime import timedelta
 import csv
 import os
-import json
 
 class Simulador:
     
@@ -297,13 +296,7 @@ class Simulador:
         except Exception as e:
             print(f"Erro ao enviar o arquivo para o bucket S3: {e}")
        
-    def dict_to_csv(self, data):
-        
-        # salcar um json com os dados
-        with open('aws_data_generation/data.json', 'w') as f:
-            json.dump(data, f)
-        
-        
+    def dict_to_csv(self, data):      
         pasta = 'aws_data_generation/csv_producao'
         if not os.path.exists(pasta):
             os.makedirs(pasta)
