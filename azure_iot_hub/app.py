@@ -161,14 +161,14 @@ def gerar_dados(num_paineis):
                     "voltagem": voltagem[random.randint(0, len(voltagem) - 1)]
                 })
 
-            if alerta:
-                sb.send_message(connection_string, queue_name)
-                print("Enviando alerta")
-                mensagem = str(sb.receiver_message(connection_string, queue_name))
-                sd.enviar_email(mensagem)
+         #   if alerta:
+         #       sb.send_message(connection_string, queue_name)
+         #       print("Enviando alerta")
+         #       mensagem = str(sb.receiver_message(connection_string, queue_name))
+         #       sd.enviar_email(mensagem)
 
             print(dados_hora)
-            envio_azure(dados_hora)
+         #  envio_azure(dados_hora)
             time.sleep(2)
     return dados
 
@@ -199,6 +199,6 @@ def pegar_env():
                         os.environ[key] = value
 
 if __name__ == "__main__":
-    pegar_env()
+  #  pegar_env()
     
     salvar_dados_json(4)
