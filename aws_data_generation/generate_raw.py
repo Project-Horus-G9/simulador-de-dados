@@ -1,16 +1,46 @@
-from datetime import datetime
 import numpy as np
 import random
-import time
-import boto3
-from datetime import timedelta
-import csv
+from dotenv import load_dotenv
 import os
+import json
+from datetime import datetime
+from AWSIoTPythonSDK.MQTTLib import AWSIoTMQTTClient
 
 class Simulator:
     
     def __init__(self):
+        load_dotenv()
+        
         self.bucket_name = 'raw-horus'
+        self.client = AWSIoTMQTTClient("Simulador")
+        
+        path_credentials_iot_core = "./credentials/iot_core/"
+        
+        credentials = self.get_credentials(path_credentials_iot_core)
+        
+        certificate, private_key, root_ca = None, None, None
+        for credential in credentials:
+            if "certificate" in credential:
+                certificate = credential
+            elif "private" in credential:
+                private_key = credential
+            elif "Root" in credential:
+                root_ca = credential
+
+        if not (certificate and private_key and root_ca):
+            raise ValueError("Certificado, chave privada ou CA root não foram encontrados nas credenciais.")
+                
+        endpoint = os.getenv("ENDPOINT")
+        port = int(os.getenv("PORT"))
+                
+        self.client.configureEndpoint(endpoint, port)
+        self.client.configureCredentials(root_ca, private_key, certificate)
+        
+        self.client.configureConnectDisconnectTimeout(10)
+        self.client.configureMQTTOperationTimeout(5)
+    
+    def get_credentials(self, path_credentials):
+        return [path_credentials + f for f in os.listdir(path_credentials)]
     
     def data_group(self, info):
 
@@ -47,8 +77,8 @@ class Simulator:
         
         for i in range(num_dados):
             
-            if i != 0 or i+1 != num_dados:
-                time.sleep(10)
+            # if i != 0 or i+1 != num_dados:
+                # time.sleep(10)
             
             for setor in dados["setores"]:
                 if i % 2 == 0:
@@ -64,6 +94,7 @@ class Simulator:
                 }
                 
                 dados_gerados = self.generate_data(info_geracao)
+                print(f"Dados gerados {i} de {num_dados}...")
                 for painel in setor["paineis"]:
                     painel["dados"].append(dados_gerados.pop(0))
                 
@@ -170,18 +201,32 @@ class Simulator:
             
         return data_group  
         
+    def send_to_bucket(self, data):
+        try:
+            self.client.connect()
+            self.client.publish('solara/data/iot', json.dumps(data), 1)
+            print("Dados enviados para o AWS IoT Core")
+        except Exception as ex:
+            print(f'Ocorreu um erro ao enviar os dados para o AWS IoT Core: {ex}')
+        finally:
+            try:
+                self.client.disconnect()
+            except Exception as disconnect_ex:
+                print(f"Ocorreu um erro ao desconectar do AWS IoT Core: {disconnect_ex}")
+
+            
     def main(self, info):
         
         data = self.data_group(info)
         print("Dados Raw gerados com sucesso.")
         
-        self.enviar_dados_bucket(self.bucket_name, data)
+        self.send_to_bucket(data)
 
 if __name__ == "__main__":
     simulator = Simulator()
     
     info = {
-        "empresa": "Empresa X",
+        "empresa": "Solara",
         "num_dados": 20,
         "num_setores": 2,
         "num_paineis": 3,

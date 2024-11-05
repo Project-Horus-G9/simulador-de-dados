@@ -1,15 +1,15 @@
 import boto3
 import json
-from datetime import datetime
 import gspread
-from google.oauth2.service_account import Credentials
 import os
+from dotenv import load_dotenv
+from datetime import datetime
+from google.oauth2.service_account import Credentials
 
 class Filter:
     
     def __init__(self):
-        
-        
+        load_dotenv()
         
         self.s3 = boto3.client('s3')
         self.buckets = {
@@ -25,8 +25,8 @@ class Filter:
         
         scope = ["https://spreadsheets.google.com/feeds", 'https://www.googleapis.com/auth/spreadsheets',
              "https://www.googleapis.com/auth/drive.file", "https://www.googleapis.com/auth/drive"]
-        path_credential = '/credentials/sheets/'
-        credential = self.get_credential(path_credential)
+        path_credential_sheets = '/credentials/sheets/'
+        credential = self.get_credential(path_credential_sheets)
         creds = Credentials.from_service_account_file(credential, scopes=scope)
         self.client = gspread.authorize(creds)
         self.sheet_key = os.getenv('SHEET_KEY')
