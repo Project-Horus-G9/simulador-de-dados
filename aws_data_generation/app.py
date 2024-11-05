@@ -159,7 +159,9 @@ class Simulador:
                 ceu = random.choice(possiveis_ceus)
             
             if modo == "simulacao":
-                time.sleep(60)
+                print(f"Gerando dados {i + 1} de {num_dados}...")
+                if i + 1 != num_dados:
+                    time.sleep(60)
             num_paineis_totais = num_paineis * num_setores
             
             info_geracao = {
@@ -368,7 +370,7 @@ class Simulador:
                         }
                         writer.writerow(row)
                         
-    def main(self, info):
+    def run(self, info):
         buckets = ["set-raw", "tote-trusted", "horus-client"]
         
         # raw
@@ -400,12 +402,12 @@ if __name__ == "__main__":
     
     info = {
         "empresa": "Empresa X",
-        "num_dados": 20,
-        "num_setores": 3,
-        "num_paineis": 5,
+        "num_dados": 2,
+        "num_setores": 2,
+        "num_paineis": 3,
         "direcionamento": "norte",
         "inclinacao": 22.5,
-        "modo": "producao"
+        "modo": "simulacao"
         # possui dois modos: simulacao e producao
         # simulacao: gera dados a cada 1 minuto
         # producao: gera uma massa de dados com 30 minutos de intervalo
@@ -413,6 +415,6 @@ if __name__ == "__main__":
 
     if info["modo"] == "simulacao":
         while True:
-            simulador.main(info)
+            simulador.run(info)
     else:
-        simulador.main(info)
+        simulador.run(info)
