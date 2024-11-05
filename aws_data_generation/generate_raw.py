@@ -1,8 +1,9 @@
 import numpy as np
 import random
-from dotenv import load_dotenv
 import os
 import json
+import time
+from dotenv import load_dotenv
 from datetime import datetime
 from AWSIoTPythonSDK.MQTTLib import AWSIoTMQTTClient
 
@@ -77,8 +78,8 @@ class Simulator:
         
         for i in range(num_dados):
             
-            # if i != 0 or i+1 != num_dados:
-                # time.sleep(10)
+            if i != 0 or i+1 != num_dados:
+                time.sleep(60)
             
             for setor in dados["setores"]:
                 if i % 2 == 0:
