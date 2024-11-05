@@ -11,9 +11,8 @@ class Simulador:
     
     def __init__(self):
         self.s3_client = boto3.client('s3')
-        
+    
     def gerar_dados(self, info):
-        
         num_paineis = info["num_paineis_totais"]
         ceu = info["ceu"]
         direcionamento = info["info_paineis"]["direcionamento"]
@@ -48,90 +47,78 @@ class Simulador:
         conjunto_luminosidade = []
         for i in range(num_paineis):
             if hora in range(6, 18):
-                conjunto_luminosidade.append(random.uniform(750, 1000) + random.uniform(-10, 10))
+                conjunto_luminosidade.append(random.uniform(750, 1000))
             elif hora in range(18, 20) or hora in range(4, 6):
-                conjunto_luminosidade.append(random.uniform(300, 500) + random.uniform(-10, 10))
-            elif hora in range(5, 6) or hora in range(4, 6):
-                conjunto_luminosidade.append(random.uniform(500, 100) + random.uniform(-10, 10))
+                conjunto_luminosidade.append(random.uniform(500, 750))
             else:
-                conjunto_luminosidade.append(random.uniform(0, 50) + random.uniform(-10, 10))
-            
-        # Temperatura
+                conjunto_luminosidade.append(random.uniform(100, 200))
+        
+        # Temperatura e Umidade
         conjunto_temp_externa = []
         conjunto_temp_interna = []
+        conjunto_umidade = []
         for i in range(num_paineis):
-            if mes in [12, 1, 2]:
+            if mes in [12, 1, 2]:  # Verão
                 temp_externa = random.uniform(30, 35)
-            elif mes in [3, 4, 5]:
+                umidade = random.uniform(70, 90)
+            elif mes in [3, 4, 5]:  # Outono
                 temp_externa = random.uniform(25, 30)
-            elif mes in [6, 7, 8]:
+                umidade = random.uniform(50, 70)
+            elif mes in [6, 7, 8]:  # Inverno
                 temp_externa = random.uniform(20, 25)
-            else:
+                umidade = random.uniform(30, 50)
+            else:  # Primavera
                 temp_externa = random.uniform(25, 30)
+                umidade = random.uniform(50, 80)
                 
             conjunto_temp_externa.append(temp_externa)
+            conjunto_umidade.append(umidade)
             
             if hora in range(10, 16):
-                temp_interna = temp_externa + random.uniform(-2, 2)
+                temp_interna = temp_externa + random.uniform(4, 8)
             else:
-                temp_interna = temp_externa + random.uniform(-5, 5)
+                temp_interna = temp_externa + random.uniform(8, 16)
                 
             conjunto_temp_interna.append(temp_interna)
-            
-            
+        
         # Potência
         conjunto_potencia = []
-
-        percentual_captacao = 0.4
-        potencia_maxima_NOCT = 400
         for i in range(num_paineis):
-            potencia = np.random.uniform(0, potencia_maxima_NOCT * percentual_captacao)
-            if hora < 6 or hora > 18:
-                potencia *= 0.1
+            potencia = np.random.uniform(5, 50) if hora in range(6, 18) else np.random.uniform(5, 10)
             conjunto_potencia.append(potencia)
-            
+        
         # Tensão
-        conjunto_tensao = []
-        for i in range(num_paineis):
-            tensao = 40 + random.uniform(-2, 2)
-            conjunto_tensao.append(tensao)
+        conjunto_tensao = [random.uniform(38, 42) for _ in range(num_paineis)]
         
         # UV
         conjunto_uv = []
-        
         for i in range(num_paineis):
-            if hora in range(8, 16):
-                max_uv = 5
-                media = max_uv * 0.8
-                desviopadrao = max_uv * 0.2
-            else:
-                max_uv = 0.5
-                media = max_uv * 0.8
-                desviopadrao = max_uv * 0.2
-            
+            max_uv = 5 if hora in range(6, 18) else 0.5
+            media = max_uv * 0.8
+            desviopadrao = max_uv * 0.2
             uv_indice = max(0, min(max_uv, random.gauss(media, desviopadrao)))
             conjunto_uv.append(uv_indice)   
         
-        
+        # Agrupar dados por painel
         conjunto_dados = []
         for i in range(num_paineis):
             dados = {
                 "data_hora": data_formatada,
-                "obstrucao": round(conjunto_obstrucao[i],2),
-                "luminosidade": round(conjunto_luminosidade[i],2),
-                "temperatura_externa": round(conjunto_temp_externa[i],2),
-                "temperatura_interna": round(conjunto_temp_interna[i],2),
-                "potencia": round(conjunto_potencia[i],2),
-                "tensao": round(conjunto_tensao[i],2),
-                "uv": round(conjunto_uv[i],2),
+                "obstrucao": round(conjunto_obstrucao[i], 2),
+                "luminosidade": round(conjunto_luminosidade[i], 2),
+                "temperatura_externa": round(conjunto_temp_externa[i], 2),
+                "temperatura_interna": round(conjunto_temp_interna[i], 2),
+                "potencia": round(conjunto_potencia[i], 2),
+                "tensao": round(conjunto_tensao[i], 2),
+                "uv": round(conjunto_uv[i], 2),
+                "umidade": round(conjunto_umidade[i], 2),
                 "ceu": ceu,
                 "direcionamento": direcionamento,
                 "inclinacao": inclinacao
             }
-            
             conjunto_dados.append(dados)
             
-        return conjunto_dados        
+        return conjunto_dados             
     
     def conjunto_dados(self, info):
 
@@ -209,21 +196,17 @@ class Simulador:
                 }
                 
                 for dado in painel["dados"]:                   
-                    energia_gerada = round((dado['uv'] * 10 * 0.8) / (dado["obstrucao"] * 0.2), 2)
-                    max_enegia_dia = 40
-                    max_enegia_noite = 4
+                    energia_gerada = max(5, min(50, round((dado['uv'] * 10 * 0.8) / max(dado["obstrucao"], 0.2), 2)))
                     
-                    # Conversão de string para datetime
                     data_hora = datetime.strptime(dado["data_hora"], '%Y-%m-%d %H:%M:%S')
                     
-                    # Cálculo da eficiência baseado na hora
                     if data_hora.time() >= datetime.strptime('06:00:00', '%H:%M:%S').time() and data_hora.time() <= datetime.strptime('18:00:00', '%H:%M:%S').time():
-                        eficiencia = round((energia_gerada * 100) / max_enegia_dia, 2)
-                        energia_esperada = round(dado['potencia'] * 0.4, 2)
+                        energia_esperada = max(5, min(50, round(dado['potencia'] * 0.4, 2)))
                     else:
-                        eficiencia = round((energia_gerada * 100) / max_enegia_noite, 2)
-                        energia_esperada = round(dado['potencia'] * 0.1, 2)
+                        energia_esperada = max(5, min(50, round(dado['potencia'] * 0.1, 2)))
                     
+                    eficiencia = round((energia_gerada * 100) / energia_esperada, 2) if energia_esperada else 0
+
                     dado_trusted = {
                         "data_hora": dado["data_hora"],
                         "obstrucao": dado["obstrucao"],
@@ -234,6 +217,7 @@ class Simulador:
                         "energia_gerada": energia_gerada,
                         "energia_esperada": energia_esperada,
                         "eficiencia": eficiencia,
+                        "umidade": dado["umidade"],
                         "ceu": dado["ceu"],
                         "direcionamento": dado["direcionamento"],
                         "inclinacao": dado["inclinacao"]
@@ -246,6 +230,7 @@ class Simulador:
             dados["setores"].append(setor_trusted)
     
         return dados
+
     
     def dados_client(self, dados_trusted):
         dados = {
@@ -305,7 +290,7 @@ class Simulador:
         headers_fazenda = ["nome", "id_usuario"]
         headers_setor = ["id_fazenda", "numero_setor"]
         headers_painel = ["id_setor", "numero_painel"]
-        headers_dado = ["data_hora", "obstrucao", "luminosidade", "temperatura_externa", "temperatura_interna", "tensao", "energia_gerada", "energia_esperada", "eficiencia", "ceu", "direcionamento", "inclinacao", "id_painel"]
+        headers_dado = ["data_hora", "obstrucao", "luminosidade", "temperatura_externa", "temperatura_interna", "tensao", "energia_gerada", "energia_esperada", "eficiencia", "umidade", "ceu", "direcionamento", "inclinacao", "id_painel"]
 
         content_usuario = ["Guilherme Silva", "guilherme@gmail.com", "1234"]
 
@@ -375,6 +360,7 @@ class Simulador:
                             "energia_gerada": dado["energia_gerada"],
                             "energia_esperada": dado["energia_esperada"],
                             "eficiencia": dado["eficiencia"],
+                            "umidade": dado["umidade"],
                             "ceu": dado["ceu"],
                             "direcionamento": dado["direcionamento"],
                             "inclinacao": dado["inclinacao"],
@@ -414,9 +400,9 @@ if __name__ == "__main__":
     
     info = {
         "empresa": "Empresa X",
-        "num_dados": 200,
+        "num_dados": 20,
         "num_setores": 3,
-        "num_paineis": 10,
+        "num_paineis": 5,
         "direcionamento": "norte",
         "inclinacao": 22.5,
         "modo": "producao"
