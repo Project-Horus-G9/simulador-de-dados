@@ -22,12 +22,6 @@ pipeline {
         stage('Install Dependencies') {
             steps {
                 script {
-
-		    sh '''sudo -S apt update
-    			sudo -S apt upgrade -y'''
-		    sh 'sudo apt install openjdk-11-jdk -y'
-		    sh 'sudo apt install python3 python3-pip'
-
                     if (fileExists('requirements.txt')) {
                         sh 'pip3 install -r requirements.txt'
                     }
