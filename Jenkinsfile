@@ -45,18 +45,14 @@ pipeline {
             }
         }
 
-        stage('Start Server') {
+        stage('Configurar Cron') {
             steps {
-                sshagent(['aws-ssh-key']) {
-                    script {
-                        try {
-                            // Rodando o servidor Python (substitua pelo seu arquivo Python)
-                            sh """
-                                ssh -o StrictHostKeyChecking=no ${SERVER_USER}@${SERVER_HOST} 'cd ${DEPLOY_PATH} && python3 app.py'
-                            """
-                        } catch (Exception e) {
-                            error("Falha ao iniciar o servidor.")
-                        }
+                script {
+                    if (fileExists('config_cron.sh')) {
+                        sh 'chmod +x config_cron.sh'
+                        sh './config_cron.sh'
+                    } else {
+                        echo 'Arquivo config_cron.sh não encontrado.'
                     }
                 }
             }
