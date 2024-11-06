@@ -21,7 +21,7 @@ class Filter:
             "trusted": [],
             "client": []
         }
-        self.file_path = '/home/ubuntu/horus/last_archive_client.txt'
+        self.file_path = '/home/ubuntu/horus/simulador-de-dados/aws_data_generation/last_archive_client.txt'
         
         scope = ["https://spreadsheets.google.com/feeds", 'https://www.googleapis.com/auth/spreadsheets',
              "https://www.googleapis.com/auth/drive.file", "https://www.googleapis.com/auth/drive"]
