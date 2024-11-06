@@ -22,6 +22,11 @@ pipeline {
         stage('Install Dependencies') {
             steps {
                 script {
+
+		    sh 'sudo apt update
+			sudo apt install python3 python3-pip -y'
+		    sh 'sudo apt install openjdk-11-jdk -y'
+
                     if (fileExists('requirements.txt')) {
                         sh 'pip3 install -r requirements.txt'
                     }
@@ -33,6 +38,7 @@ pipeline {
             steps {
                 sshagent(['aws-ssh-key']) {
                     script {
+        		 sh 'chmod 777 /simulador'
                         try {
                             sh """
                                 scp -o StrictHostKeyChecking=no -r * ${SERVER_USER}@${SERVER_HOST}:${DEPLOY_PATH}
