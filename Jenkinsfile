@@ -5,7 +5,7 @@ pipeline {
         REPO_URL = 'https://github.com/Project-Horus-G9/simulador-de-dados'
         DEPLOY_PATH = '/simulador'
         SERVER_USER = 'ubuntu'
-        SERVER_HOST = '18.212.95.38'
+        SERVER_HOST = '18.208.141.113'
     }
 
     triggers {
