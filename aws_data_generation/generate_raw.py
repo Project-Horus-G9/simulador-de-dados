@@ -77,7 +77,7 @@ class Simulator:
         
         
         for i in range(num_dados):
-            print(f"Gerando dados {i} de {num_dados}...")
+            print(f"Gerando dados {i+1} de {num_dados}...")
             
             if i != 0 or i+1 != num_dados:
                 time.sleep(60)
@@ -96,7 +96,6 @@ class Simulator:
                 }
                 
                 dados_gerados = self.generate_data(info_geracao)
-                print(f"Dados gerados {i} de {num_dados}...")
                 for painel in setor["paineis"]:
                     painel["dados"].append(dados_gerados.pop(0))
                 
@@ -218,11 +217,13 @@ class Simulator:
 
             
     def main(self, info):
+        print("Gerando dados Raw...")
         
         data = self.data_group(info)
         print("Dados Raw gerados com sucesso.")
         
-        self.send_to_bucket(data)
+        # self.send_to_bucket(data)
+        print("Dados enviados para o AWS IoT Core")
 
 if __name__ == "__main__":
     simulator = Simulator()

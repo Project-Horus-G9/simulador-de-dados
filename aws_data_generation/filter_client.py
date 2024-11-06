@@ -162,9 +162,11 @@ class Filter:
                 print("Dados enviados com sucesso!")
     
     def run(self):
+        print("Filtrando dados...")
         self.get_objects()
         self.process_data()
         self.save_last_file()
+        print("Filtro de dados finalizado.")
         
 if __name__ == '__main__':
     filter = Filter()

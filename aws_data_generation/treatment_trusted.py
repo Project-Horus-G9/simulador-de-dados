@@ -43,7 +43,7 @@ class Treatment:
             )
             
             self.final_object = obj['Key']
-            print(f"File {obj['Key']} processed and transferred to trusted bucket.")
+            print(f"Arquivo {obj['Key']} processado com sucesso.")
             
         if self.final_object != '':
             self.save_last_file()
@@ -52,7 +52,7 @@ class Treatment:
         if self.final_object:
             with open('last_archive_trusted.txt', 'w') as f:
                 f.write(self.final_object)
-            print(f"Name of the last file saved in last_archive_trusted.txt: {self.final_object}")
+            print(f"Nome do último arquivo salvo em last_archive_trusted.txt: {self.final_object}")
         
     def data_trusted(self, data_raw):
         data = {
@@ -107,8 +107,10 @@ class Treatment:
         return data  
 
     def run(self):
+        print("Iniciando tratamento dos dados...")
         self.get_objects()
         self.process_data()
+        print("Tratamento dos dados finalizado.")
     
 if __name__ == "__main__":
     treatment = Treatment()
