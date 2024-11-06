@@ -23,8 +23,8 @@ pipeline {
             steps {
                 script {
 
-		    sh '''sudo -s apt update
-    			sudo -s apt upgrade -y'''
+		    sh '''sudo -S apt update
+    			sudo -S apt upgrade -y'''
 		    sh 'sudo apt install openjdk-11-jdk -y'
 		    sh 'sudo apt install python3 python3-pip'
 
