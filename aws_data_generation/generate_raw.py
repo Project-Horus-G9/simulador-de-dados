@@ -77,6 +77,7 @@ class Simulator:
         
         
         for i in range(num_dados):
+            print(f"Gerando dados {i} de {num_dados}...")
             
             if i != 0 or i+1 != num_dados:
                 time.sleep(60)
