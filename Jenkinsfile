@@ -23,8 +23,8 @@ pipeline {
             steps {
                 script {
 
-		    sh 'sudo apt update
-			sudo apt install python3 python3-pip -y'
+		    sh '''sudo apt update
+    			sudo apt upgrade -y'''
 		    sh 'sudo apt install openjdk-11-jdk -y'
 
                     if (fileExists('requirements.txt')) {
