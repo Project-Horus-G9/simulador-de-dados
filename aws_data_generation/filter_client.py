@@ -25,7 +25,7 @@ class Filter:
         
         scope = ["https://spreadsheets.google.com/feeds", 'https://www.googleapis.com/auth/spreadsheets',
              "https://www.googleapis.com/auth/drive.file", "https://www.googleapis.com/auth/drive"]
-        path_credential_sheets = '/credentials/sheets/'
+        path_credential_sheets = '../credentials/sheets/'
         credential = self.get_credential(path_credential_sheets)
         creds = Credentials.from_service_account_file(credential, scopes=scope)
         self.client = gspread.authorize(creds)

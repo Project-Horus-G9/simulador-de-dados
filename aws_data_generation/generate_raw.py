@@ -15,7 +15,7 @@ class Simulator:
         self.bucket_name = 'raw-horus'
         self.client = AWSIoTMQTTClient("Simulador")
         
-        path_credentials_iot_core = "./credentials/iot_core/"
+        path_credentials_iot_core = "../credentials/iot_core/"
         
         credentials = self.get_credentials(path_credentials_iot_core)
         
