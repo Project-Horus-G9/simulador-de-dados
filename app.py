@@ -8,6 +8,8 @@ import csv
 import os
 import json
 
+# comando necessário para ativar o ambiente a ser utilizado para rodar os códigos source myenv/bin/activate
+
 class Simulador:
     
     def __init__(self):
