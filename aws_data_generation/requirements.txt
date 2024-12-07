@@ -1,0 +1,6 @@
+numpy
+python-dotenv
+boto3
+AWSIoTPythonSDK
+gspread
+google-auth
