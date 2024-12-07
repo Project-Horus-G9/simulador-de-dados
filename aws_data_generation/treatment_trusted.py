@@ -91,6 +91,7 @@ class Treatment:
                         "temperatura_externa": dado["temperatura_externa"],
                         "temperatura_interna": dado["temperatura_interna"],
                         "tensao": dado["tensao"],
+                        "umidade": dado["umidade"],
                         "energia_gerada": energia_gerada,
                         "energia_esperada": energia_esperada,
                         "eficiencia": eficiencia,

@@ -116,7 +116,7 @@ class Filter:
         worksheet = sheet.get_worksheet(0)
         
         headers = ["Cliente", "Setor", "Painel", "Data/Hora", "Obstrução", "Luminosidade", 
-                    "Temperatura Externa", "Temperatura Interna", "Tensão", 
+                    "Temperatura Externa", "Temperatura Interna", "Tensão",
                     "Energia Gerada", "Energia Esperada", "Eficiência", "Céu", "Umidade",
                     "Direcionamento", "Inclinação"]
         
