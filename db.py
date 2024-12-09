@@ -33,13 +33,14 @@ def inserir_dados_leitura(cursor, dados, fk_painel):
     query = """
     INSERT INTO dados_leitura 
     (temperatura_interna, temperatura_externa, energia_gerada, energia_esperada, tensao, eficiencia,
-    direcionamento, inclinacao, luminosidade, ceu, obstrucao, data, fk_painel) 
-    VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s)
+    direcionamento, inclinacao, luminosidade, ceu, obstrucao, umidade, data, fk_painel) 
+    VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s)
     """
     cursor.execute(query, (
         dados['temperatura_interna'], dados['temperatura_externa'], dados['energia_gerada'], 
         dados['energia_esperada'], dados['tensao'], dados['eficiencia'], dados['direcionamento'], 
-        dados['inclinacao'], dados['luminosidade'], dados['ceu'], dados['obstrucao'], dados['data_hora'], fk_painel
+        dados['inclinacao'], dados['luminosidade'], dados['ceu'], dados['obstrucao'], 
+        dados['umidade'], dados['data_hora'], fk_painel
     ))
 
 # Função para processar o JSON e inserir os dados no banco de dados
@@ -48,25 +49,19 @@ def processar_dados(json_data):
     cursor = conexao.cursor()
 
     # Iterar pelas informações do JSON
+    empresa_id = inserir_empresa(cursor, json_data['cliente'])  # Inserir empresa uma única vez
+    
     for setor_data in json_data['setores']:
+        setor_id = inserir_setor(cursor, f"Setor {setor_data['setor']}", empresa_id)  # Inserir setor
+        
         for painel_data in setor_data['paineis']:
+            painel_id = inserir_painel(cursor, f"Painel {painel_data['painel']}", setor_id)  # Inserir painel
+            
             for dados in painel_data['dados']:
-                # Inserir dados na tabela empresa
-                empresa_id = inserir_empresa(cursor, json_data['cliente'])
+                inserir_dados_leitura(cursor, dados, painel_id)  # Inserir dados de leitura
                 
-                # Inserir dados na tabela setor
-                setor_id = inserir_setor(cursor, f"Setor {setor_data['setor']}", empresa_id)
-                
-                # Inserir painel
-                painel_id = inserir_painel(cursor, f"Painel {painel_data['painel']}", setor_id)
-                
-                # Inserir dados de leitura
-                inserir_dados_leitura(cursor, dados, painel_id)
-                
-                # Confirmar as inserções
-                conexao.commit()
-
-    # Fechar a conexão com o banco de dados
+    # Confirmar as inserções e fechar a conexão
+    conexao.commit()
     cursor.close()
     conexao.close()
 
