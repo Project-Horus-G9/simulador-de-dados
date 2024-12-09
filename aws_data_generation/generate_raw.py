@@ -175,11 +175,20 @@ class Simulator:
         # UV
         conjunto_uv = []
         for i in range(num_paineis):
-            max_uv = 5 if hora in range(6, 18) else 0.5
-            media = max_uv * 0.8
-            desviopadrao = max_uv * 0.2
-            uv_indice = max(0, min(max_uv, random.gauss(media, desviopadrao)))
-            conjunto_uv.append(uv_indice)   
+            hora_atual = datetime.now().hour
+            if hora_atual in range(6, 18):
+                max_uv = 5
+                media = max_uv * 0.75
+                desviopadrao = max_uv * 0.2
+            else:
+                max_uv = 0.5
+                media = max_uv * 0.2
+                desviopadrao = max_uv * 0.1
+
+            uv_indice = random.gauss(media, desviopadrao)
+            uv_indice = max(0, min(max_uv, uv_indice))
+            
+            conjunto_uv.append(uv_indice) 
         
         # Agrupar dados por painel
         data_group = []

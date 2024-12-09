@@ -73,16 +73,24 @@ class Treatment:
                 }
                 
                 for dado in painel['dados']:
-                    energia_gerada = round((dado['uv'] * 10 * 0.8) / (dado["obstrucao"] * 0.2), 2)
-                    max_energia_dia = 44
-                    max_energia_noite = 4.8
+                    energia_gerada = round((dado['uv'] * 10 * 0.8) / (dado["obstrucao"] * 0.1), 2)
+                    max_enegia_dia = 44
+                    max_enegia_noite = 4.8
 
-                    energia_esperada = round(dado['potencia'] * 0.8, 2)
+                    energia_esperada = round(dado['potencia'] * 0.7, 2)
+                    if energia_esperada < 0:
+                        energia_esperada = 0
+                    elif energia_esperada > max_enegia_dia:
+                        energia_esperada = max_enegia_dia
 
                     if datetime.strptime(dado["data_hora"], '%Y-%m-%d %H:%M:%S').time() >= datetime.strptime('06:00:00', '%H:%M:%S').time() and datetime.strptime(dado["data_hora"], '%Y-%m-%d %H:%M:%S').time() <= datetime.strptime('18:00:00', '%H:%M:%S').time():
-                        eficiencia = round(energia_gerada / max_energia_dia, 2)
+                        eficiencia = round((energia_gerada * 150) / max_enegia_dia, 2)
+                        if eficiencia > 100:
+                            eficiencia = 100
                     else:
-                        eficiencia = round(energia_gerada / max_energia_noite, 2)
+                        eficiencia = round((energia_gerada * 150) / max_enegia_noite, 2)
+                        if eficiencia > 100:
+                            eficiencia = 100
 
                     dado_trusted = {
                         "data_hora": dado["data_hora"],
